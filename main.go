@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"testing"
 
 	furit "github.com/kemokemo/furit/lib"
 )
@@ -34,6 +35,7 @@ var (
 )
 
 func init() {
+	testing.Init() // require Go 1.13 or later
 	flag.BoolVar(&help, "h", false, "display help")
 	flag.Parse()
 	cmdArgs = flag.Args()
