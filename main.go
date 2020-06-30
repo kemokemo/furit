@@ -20,6 +20,9 @@ const (
 const (
 	usage = `Usage: furit [<option>...] <1st path> <2nd path>...
  you can set mutiple paths to search invalid images.`
+	flags = `-d, -delete: delete unlinked image files (with confirmation)
+-f, -force: delete unlinked image files without prompting for confirmation
+-h, -help: display help`
 )
 
 var (
@@ -31,8 +34,9 @@ var (
 
 // flags
 var (
-	help    bool
-	delFlag bool
+	help      bool
+	delFlag   bool
+	forceFlag bool
 )
 
 func init() {
@@ -41,6 +45,8 @@ func init() {
 	flag.BoolVar(&help, "h", false, "display help")
 	flag.BoolVar(&delFlag, "delete", false, "delete unlinked image files")
 	flag.BoolVar(&delFlag, "d", false, "delete unlinked image files")
+	flag.BoolVar(&forceFlag, "force", false, "delete unlinked image files without prompting for confirmation")
+	flag.BoolVar(&forceFlag, "f", false, "delete unlinked image files without prompting for confirmation")
 	flag.Parse()
 	cmdArgs = flag.Args()
 }
@@ -51,8 +57,7 @@ func main() {
 
 func run(args []string) int {
 	if help {
-		fmt.Fprintf(out, "%s\n\n", usage)
-		flag.PrintDefaults()
+		fmt.Fprintf(out, "%s\n\n%s", usage, flags)
 		return exitCodeOK
 	}
 	if len(args) == 0 {
@@ -101,14 +106,16 @@ func run(args []string) int {
 			continue
 		}
 
-		res, err := askForConfirmation("Are you sure to delete these unlinked images?", os.Stdin, out, 3)
-		if !res {
-			if err != nil {
-				fmt.Fprintf(outerr, "the file deletion process has been canceled: %s", err)
-				continue
-			} else {
-				fmt.Fprintf(outerr, "the file deletion process has been canceled by user input")
-				continue
+		if !forceFlag {
+			res, err := askForConfirmation("Are you sure to delete these unlinked images?", os.Stdin, out, 3)
+			if !res {
+				if err != nil {
+					fmt.Fprintf(outerr, "the file deletion process has been canceled: %s", err)
+					continue
+				} else {
+					fmt.Fprintf(outerr, "the file deletion process has been canceled by user input")
+					continue
+				}
 			}
 		}
 		for _, delPath := range delPaths {

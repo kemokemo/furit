@@ -97,6 +97,7 @@ func Test_main(t *testing.T) {
 func Test_main_flags(t *testing.T) {
 	type args struct {
 		help bool
+		ver  bool
 	}
 	tests := []struct {
 		name     string
@@ -105,7 +106,7 @@ func Test_main_flags(t *testing.T) {
 		out      string
 		outerr   string
 	}{
-		{"help", args{true}, exitCodeOK, fmt.Sprintf("%s\n\n", usage), ""},
+		{"help", args{true, false}, exitCodeOK, fmt.Sprintf("%s\n\n%s", usage, flags), ""},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
