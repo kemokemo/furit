@@ -20,9 +20,18 @@ const (
 const (
 	usage = `Usage: furit [<option>...] <1st path> <2nd path>...
  you can set mutiple paths to search invalid images.`
-	flags = `-d, -delete: delete unlinked image files (with confirmation)
--f, -force: delete unlinked image files without prompting for confirmation
--h, -help: display help`
+
+	flags = `-d, -delete:
+    delete unlinked image files (with confirmation)
+
+-f, -force:
+    delete unlinked image files without prompting for confirmation
+
+-h, -help:
+    display help
+
+-v, -version:
+    display version`
 )
 
 var (
@@ -35,6 +44,7 @@ var (
 // flags
 var (
 	help      bool
+	ver       bool
 	delFlag   bool
 	forceFlag bool
 )
@@ -43,6 +53,8 @@ func init() {
 	testing.Init() // require Go 1.13 or later
 	flag.BoolVar(&help, "help", false, "display help")
 	flag.BoolVar(&help, "h", false, "display help")
+	flag.BoolVar(&ver, "version", false, "display version")
+	flag.BoolVar(&ver, "v", false, "display version")
 	flag.BoolVar(&delFlag, "delete", false, "delete unlinked image files")
 	flag.BoolVar(&delFlag, "d", false, "delete unlinked image files")
 	flag.BoolVar(&forceFlag, "force", false, "delete unlinked image files without prompting for confirmation")
@@ -57,11 +69,15 @@ func main() {
 
 func run(args []string) int {
 	if help {
-		fmt.Fprintf(out, "%s\n\n%s", usage, flags)
+		fmt.Fprintf(out, "%s\n\n%s\n", usage, flags)
+		return exitCodeOK
+	}
+	if ver {
+		fmt.Fprintf(out, "%s version %s.%s\n", Name, Version, revision)
 		return exitCodeOK
 	}
 	if len(args) == 0 {
-		fmt.Fprintf(outerr, "path is empty. please set it.\n\n%v", usage)
+		fmt.Fprintf(outerr, "path is empty. please set it.\n\n%v\n", usage)
 		return exitCodeInvalidArgs
 	}
 
@@ -76,14 +92,14 @@ func run(args []string) int {
 
 		links, err := furit.Markdown.Find(root)
 		if err != nil {
-			fmt.Fprintf(outerr, "failed to find links: %v", err)
+			fmt.Fprintf(outerr, "failed to find links: %v\n", err)
 			exitCode = exitCodeInternalOperation
 			continue
 		}
 
 		imgPaths, err := furit.Image.Find(root)
 		if err != nil {
-			fmt.Fprintf(outerr, "failed to find image paths: %v", err)
+			fmt.Fprintf(outerr, "failed to find image paths: %v\n", err)
 			exitCode = exitCodeInternalOperation
 			continue
 		}
@@ -110,10 +126,10 @@ func run(args []string) int {
 			res, err := askForConfirmation("Are you sure to delete these unlinked images?", os.Stdin, out, 3)
 			if !res {
 				if err != nil {
-					fmt.Fprintf(outerr, "the file deletion process has been canceled: %s", err)
+					fmt.Fprintf(outerr, "the file deletion process has been canceled: %s\n", err)
 					continue
 				} else {
-					fmt.Fprintf(outerr, "the file deletion process has been canceled by user input")
+					fmt.Fprintln(outerr, "the file deletion process has been canceled by user input")
 					continue
 				}
 			}
@@ -121,7 +137,7 @@ func run(args []string) int {
 		for _, delPath := range delPaths {
 			e := os.Remove(delPath)
 			if e != nil {
-				fmt.Fprintf(outerr, "failed to remove file: %s", e)
+				fmt.Fprintf(outerr, "failed to remove file: %s\n", e)
 				exitCode = exitCodeInternalOperation
 			}
 		}

@@ -17,21 +17,48 @@ $ furit -h
 Usage: furit [<option>...] <1st path> <2nd path>...
  you can set mutiple paths to search invalid images.
 
-  -h	display help
+-d, -delete:
+    delete unlinked image files (with confirmation)
+
+-f, -force:
+    delete unlinked image files without prompting for confirmation
+
+-h, -help:
+    display help
+
+-v, -version:
+    display version
 ```
 
 Currently, only Markdown format is supported as text to find links to images.
 
 ### Example
 
-```
-$ furit lib/test-data/markdown
-lib/test-data/markdown/assets/画面.bmp
-lib/test-data/markdown/テスト.gif
+```sh
+$ furit content
+content/posts/assets/some_screen.bmp
+content/posts/assets/logo.gif
 ```
 
 This tool looks recursively for the folder you specify, finds links to images in the text it finds, and enumerates the unlinked image files from text.
 
+```sh
+$ furit -d content
+content/posts/assets/some_screen.bmp
+content/posts/assets/logo.gif
+Are you sure to delete these unlinked images? [y/n]: n
+the file deletion process has been canceled by user input
+```
+
+If you want to delete unwanted images found by the tool while reviewing them, specify only the `-d` flag.
+
+```sh
+$ furit -d -f content
+content/posts/assets/some_screen.bmp
+content/posts/assets/logo.gif
+```
+
+You can also specify the `-f` flag if you want to run the process of deletion automatically without confirmation. In that case, the list of files to be deleted will still be printed.
 ## License
 
 [MIT](https://github.com/kemokemo/furit/blob/master/LICENSE)
