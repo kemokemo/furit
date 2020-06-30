@@ -102,7 +102,7 @@ func run(args []string) int {
 			}
 		}
 
-		if !delFlag {
+		if !delFlag || len(delPaths) == 0 {
 			continue
 		}
 
