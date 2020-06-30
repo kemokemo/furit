@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"flag"
+	"fmt"
 	"testing"
 )
 
@@ -74,6 +75,55 @@ func Test_main(t *testing.T) {
 				exitCode = n
 			}
 
+			main()
+
+			if exitCode != tt.exitCode {
+				t.Errorf("exit code = %v, want %v", exitCode, tt.exitCode)
+			}
+
+			stdout := bout.String()
+			if stdout != tt.out {
+				t.Errorf("stdout = %v, want %v", stdout, tt.out)
+			}
+
+			stderr := bouterr.String()
+			if stderr != tt.outerr {
+				t.Errorf("stderr = %v, want %v", stderr, tt.outerr)
+			}
+		})
+	}
+}
+
+func Test_main_flags(t *testing.T) {
+	type args struct {
+		help bool
+	}
+	tests := []struct {
+		name     string
+		args     args
+		exitCode int
+		out      string
+		outerr   string
+	}{
+		{"help", args{true}, exitCodeOK, fmt.Sprintf("%s\n\n", usage), ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			flagSet := flag.NewFlagSet("testing main", flag.ContinueOnError)
+			flagSet.Parse([]string{""})
+			cmdArgs = flagSet.Args()
+
+			bout := new(bytes.Buffer)
+			out = bout
+			bouterr := new(bytes.Buffer)
+			outerr = bouterr
+
+			var exitCode int
+			exit = func(n int) {
+				exitCode = n
+			}
+
+			help = tt.args.help
 			main()
 
 			if exitCode != tt.exitCode {

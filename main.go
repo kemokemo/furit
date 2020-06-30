@@ -31,12 +31,16 @@ var (
 
 // flags
 var (
-	help bool
+	help    bool
+	delFlag bool
 )
 
 func init() {
 	testing.Init() // require Go 1.13 or later
+	flag.BoolVar(&help, "help", false, "display help")
 	flag.BoolVar(&help, "h", false, "display help")
+	flag.BoolVar(&delFlag, "delete", false, "delete unlinked image files")
+	flag.BoolVar(&delFlag, "d", false, "delete unlinked image files")
 	flag.Parse()
 	cmdArgs = flag.Args()
 }
@@ -84,10 +88,34 @@ func run(args []string) int {
 			imgMap[link] = false
 		}
 
+		var delPaths []string
 		for _, imPath := range imgPaths {
 			_, ok := imgMap[imPath]
 			if !ok {
+				delPaths = append(delPaths, imPath)
 				fmt.Fprintln(out, imPath)
+			}
+		}
+
+		if !delFlag {
+			continue
+		}
+
+		res, err := askForConfirmation("Are you sure to delete these unlinked images?", os.Stdin, out, 3)
+		if !res {
+			if err != nil {
+				fmt.Fprintf(outerr, "the file deletion process has been canceled: %s", err)
+				continue
+			} else {
+				fmt.Fprintf(outerr, "the file deletion process has been canceled by user input")
+				continue
+			}
+		}
+		for _, delPath := range delPaths {
+			e := os.Remove(delPath)
+			if e != nil {
+				fmt.Fprintf(outerr, "failed to remove file: %s", e)
+				exitCode = exitCodeInternalOperation
 			}
 		}
 	}
