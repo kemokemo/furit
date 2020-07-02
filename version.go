@@ -4,6 +4,6 @@ package main
 const Name string = "furit"
 
 // Version is semantic version of this app.
-const Version string = "0.0.2"
+const Version string = "0.0.3"
 
 var revision = ""
