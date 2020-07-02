@@ -10,7 +10,7 @@ import (
 
 type imageFinder struct{}
 
-const imgFileFormat = `\.(png|PNG|jpg|JPG|jpeg|JPEG|bmp|BMP|gif|GIF|tiff|TIFF)`
+const imgFileFormat = `\.(?i:png|jpg|jpeg|bmp|gif|tif|tiff|emf)`
 
 var imgFileReg = regexp.MustCompile(imgFileFormat)
 
