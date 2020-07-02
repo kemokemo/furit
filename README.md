@@ -30,8 +30,6 @@ Usage: furit [<option>...] <1st path> <2nd path>...
     display version
 ```
 
-Currently, only Markdown format is supported as text to find links to images.
-
 ### Example
 
 ```sh
@@ -59,6 +57,24 @@ content/posts/assets/logo.gif
 ```
 
 You can also specify the `-f` flag if you want to run the process of deletion automatically without confirmation. In that case, the list of files to be deleted will still be printed.
+
+## Supported
+
+### Text format
+
+Currently, only `Markdown` format is supported as text to find links to images.
+
+### Image format
+
+The following image extensions are supported. They are not case insensitive.
+
+- png
+- jpg, jpeg
+- bmp
+- gif
+- tif, tiff
+- emf
+
 ## License
 
 [MIT](https://github.com/kemokemo/furit/blob/master/LICENSE)
