@@ -4,47 +4,19 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"testing"
 )
 
-func Test_run(t *testing.T) {
-	type args struct {
-		args []string
-	}
-	tests := []struct {
-		name   string
-		args   args
-		want   int
-		out    string
-		outerr string
-	}{
-		{"test-data", args{[]string{"lib/test-data/markdown"}}, exitCodeOK, "lib/test-data/markdown/assets/画面.bmp\nlib/test-data/markdown/テスト.gif\n", ""},
-		{"empty args", args{[]string{}}, exitCodeInvalidArgs, "", "path is empty. please set it.\n\nUsage: furit [<option>...] <1st path> <2nd path>...\n you can set mutiple paths to search invalid images.\n"},
-		{"empty string", args{[]string{""}}, exitCodeInvalidArgs, "", "path is invalid: lstat : no such file or directory\n"},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			bout := new(bytes.Buffer)
-			out = bout
-			bouterr := new(bytes.Buffer)
-			outerr = bouterr
-
-			if got := run(tt.args.args); got != tt.want {
-				t.Errorf("run() = %v, want %v", got, tt.want)
-			}
-
-			stdout := bout.String()
-			if stdout != tt.out {
-				t.Errorf("stdout = %v, want %v", stdout, tt.out)
-			}
-
-			stderr := bouterr.String()
-			if stderr != tt.outerr {
-				t.Errorf("stderr = %v, want %v", stderr, tt.outerr)
-			}
-		})
-	}
-}
+const (
+	foundFiles    = "lib/test-data/markdown/assets/画面.bmp\nlib/test-data/markdown/テスト.gif\n"
+	emptyArgs     = "path is empty. please set it.\n\nUsage: furit [<option>...] <1st path> <2nd path>...\n you can set mutiple paths to search invalid images.\n"
+	emptyString   = "path is invalid: lstat : no such file or directory\n"
+	multiplePaths = "lib/test-data/markdown/assets/画面.bmp\nlib/test-data/markdown/テスト.gif\nlib/test-data/image-files/blank.jpg\nlib/test-data/image-files/sample.png\nlib/test-data/image-files/画像/テスト.gif\nlib/test-data/image-files/画面.bmp\n"
+	promptStr     = "Are you sure to delete these unlinked images? [y/n]: "
+	canceledStr   = "the file deletion process has been canceled: failed to read user input: EOF\n"
+)
 
 func Test_main(t *testing.T) {
 	tests := []struct {
@@ -54,10 +26,11 @@ func Test_main(t *testing.T) {
 		out      string
 		outerr   string
 	}{
-		{"test-data", []string{"lib/test-data/markdown"}, exitCodeOK, "lib/test-data/markdown/assets/画面.bmp\nlib/test-data/markdown/テスト.gif\n", ""},
-		{"empty args", []string{}, exitCodeInvalidArgs, "", "path is empty. please set it.\n\nUsage: furit [<option>...] <1st path> <2nd path>...\n you can set mutiple paths to search invalid images.\n"},
-		{"empty string", []string{""}, exitCodeInvalidArgs, "", "path is invalid: lstat : no such file or directory\n"},
-		{"multiple paths", []string{"lib/test-data/markdown", "lib/test-data/image-files"}, exitCodeOK, "lib/test-data/markdown/assets/画面.bmp\nlib/test-data/markdown/テスト.gif\nlib/test-data/image-files/blank.jpg\nlib/test-data/image-files/sample.png\nlib/test-data/image-files/画像/テスト.gif\nlib/test-data/image-files/画面.bmp\n", ""},
+		{"not found", []string{"lib/test-data/markdown0"}, exitCodeOK, "", ""},
+		{"found files", []string{"lib/test-data/markdown"}, exitCodeFoundUnreferencedImages, foundFiles, ""},
+		{"empty args", []string{}, exitCodeInvalidArgs, "", emptyArgs},
+		{"empty string", []string{""}, exitCodeInvalidArgs, "", emptyString},
+		{"multiple paths", []string{"lib/test-data/markdown", "lib/test-data/image-files"}, exitCodeFoundUnreferencedImages, multiplePaths, ""},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -65,36 +38,31 @@ func Test_main(t *testing.T) {
 			flagSet.Parse(tt.args)
 			cmdArgs = flagSet.Args()
 
-			bout := new(bytes.Buffer)
-			out = bout
-			bouterr := new(bytes.Buffer)
-			outerr = bouterr
-
-			var exitCode int
+			var exitCodeTest int
 			exit = func(n int) {
-				exitCode = n
+				exitCodeTest = n
 			}
+			out = new(bytes.Buffer)
+			outerr = new(bytes.Buffer)
 
 			main()
 
-			if exitCode != tt.exitCode {
-				t.Errorf("exit code = %v, want %v", exitCode, tt.exitCode)
+			if exitCodeTest != tt.exitCode {
+				t.Errorf("exit code = %v, want %v", exitCodeTest, tt.exitCode)
 			}
-
-			stdout := bout.String()
-			if stdout != tt.out {
-				t.Errorf("stdout = %v, want %v", stdout, tt.out)
+			gotout := out.(*bytes.Buffer).String()
+			if gotout != tt.out {
+				t.Errorf("gotout = %v, want %v", gotout, tt.out)
 			}
-
-			stderr := bouterr.String()
-			if stderr != tt.outerr {
-				t.Errorf("stderr = %v, want %v", stderr, tt.outerr)
+			goterr := outerr.(*bytes.Buffer).String()
+			if goterr != tt.outerr {
+				t.Errorf("goterr = %v, want %v", goterr, tt.outerr)
 			}
 		})
 	}
 }
 
-func Test_main_flags(t *testing.T) {
+func Test_main_help_ver(t *testing.T) {
 	type args struct {
 		help bool
 		ver  bool
@@ -111,37 +79,93 @@ func Test_main_flags(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			flagSet := flag.NewFlagSet("testing main", flag.ContinueOnError)
-			flagSet.Parse([]string{""})
-			cmdArgs = flagSet.Args()
-
-			bout := new(bytes.Buffer)
-			out = bout
-			bouterr := new(bytes.Buffer)
-			outerr = bouterr
-
-			var exitCode int
+			var exitCodeTest int
 			exit = func(n int) {
-				exitCode = n
+				exitCodeTest = n
 			}
+			out = new(bytes.Buffer)
+			outerr = new(bytes.Buffer)
 
 			help = tt.args.help
 			ver = tt.args.ver
 			main()
 
-			if exitCode != tt.exitCode {
-				t.Errorf("exit code = %v, want %v", exitCode, tt.exitCode)
+			if exitCodeTest != tt.exitCode {
+				t.Errorf("exit code = %v, want %v", exitCodeTest, tt.exitCode)
 			}
-
-			stdout := bout.String()
-			if stdout != tt.out {
-				t.Errorf("stdout = %v, want %v", stdout, tt.out)
+			gotout := out.(*bytes.Buffer).String()
+			if gotout != tt.out {
+				t.Errorf("gotout = %v, want %v", gotout, tt.out)
 			}
-
-			stderr := bouterr.String()
-			if stderr != tt.outerr {
-				t.Errorf("stderr = %v, want %v", stderr, tt.outerr)
+			goterr := outerr.(*bytes.Buffer).String()
+			if goterr != tt.outerr {
+				t.Errorf("goterr = %v, want %v", goterr, tt.outerr)
 			}
 		})
 	}
+	help = false
+	ver = false
+}
+
+func Test_main_delete(t *testing.T) {
+	help = false
+	ver = false
+
+	dir, err := ioutil.TempDir("test-data", "furit-test")
+	if err != nil {
+		t.Errorf("failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(dir)
+	mdF, err := ioutil.TempFile(dir, "test*.md")
+	defer mdF.Close()
+	imgF, err := ioutil.TempFile(dir, "sample*.png")
+	defer imgF.Close()
+
+	type args struct {
+		root  []string
+		del   bool
+		force bool
+	}
+	tests := []struct {
+		name     string
+		args     args
+		exitCode int
+		out      string
+		outerr   string
+	}{
+		{"delete with prompt", args{[]string{dir}, true, false}, exitCodeFoundUnreferencedImages, fmt.Sprintf("%s\n%s", imgF.Name(), promptStr), canceledStr},
+		{"delete forcely", args{[]string{dir}, true, true}, exitCodeFoundUnreferencedImages, fmt.Sprintf("%v\n", imgF.Name()), ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			flagSet := flag.NewFlagSet("testing main", flag.ContinueOnError)
+			flagSet.Parse(tt.args.root)
+			cmdArgs = flagSet.Args()
+
+			var exitCodeTest int
+			exit = func(n int) {
+				exitCodeTest = n
+			}
+			out = new(bytes.Buffer)
+			outerr = new(bytes.Buffer)
+
+			delFlag = tt.args.del
+			forceFlag = tt.args.force
+			main()
+
+			if exitCodeTest != tt.exitCode {
+				t.Errorf("exit code = %v, want %v", exitCodeTest, tt.exitCode)
+			}
+			gotout := out.(*bytes.Buffer).String()
+			if gotout != tt.out {
+				t.Errorf("gotout = %v, want %v", gotout, tt.out)
+			}
+			goterr := outerr.(*bytes.Buffer).String()
+			if goterr != tt.outerr {
+				t.Errorf("goterr = %v, want %v", goterr, tt.outerr)
+			}
+		})
+	}
+	delFlag = false
+	forceFlag = false
 }
