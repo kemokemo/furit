@@ -18,7 +18,8 @@ func Test_run(t *testing.T) {
 		out    string
 		outerr string
 	}{
-		{"test-data", args{[]string{"lib/test-data/markdown"}}, exitCodeOK, "lib/test-data/markdown/assets/画面.bmp\nlib/test-data/markdown/テスト.gif\n", ""},
+		{"not found", args{[]string{"lib/test-data/markdown0"}}, exitCodeOK, "", ""},
+		{"found files", args{[]string{"lib/test-data/markdown"}}, exitCodeFoundUnreferencedImages, "lib/test-data/markdown/assets/画面.bmp\nlib/test-data/markdown/テスト.gif\n", ""},
 		{"empty args", args{[]string{}}, exitCodeInvalidArgs, "", "path is empty. please set it.\n\nUsage: furit [<option>...] <1st path> <2nd path>...\n you can set mutiple paths to search invalid images.\n"},
 		{"empty string", args{[]string{""}}, exitCodeInvalidArgs, "", "path is invalid: lstat : no such file or directory\n"},
 	}
@@ -54,10 +55,11 @@ func Test_main(t *testing.T) {
 		out      string
 		outerr   string
 	}{
-		{"test-data", []string{"lib/test-data/markdown"}, exitCodeOK, "lib/test-data/markdown/assets/画面.bmp\nlib/test-data/markdown/テスト.gif\n", ""},
+		{"not found", []string{"lib/test-data/markdown0"}, exitCodeOK, "", ""},
+		{"found files", []string{"lib/test-data/markdown"}, exitCodeFoundUnreferencedImages, "lib/test-data/markdown/assets/画面.bmp\nlib/test-data/markdown/テスト.gif\n", ""},
 		{"empty args", []string{}, exitCodeInvalidArgs, "", "path is empty. please set it.\n\nUsage: furit [<option>...] <1st path> <2nd path>...\n you can set mutiple paths to search invalid images.\n"},
 		{"empty string", []string{""}, exitCodeInvalidArgs, "", "path is invalid: lstat : no such file or directory\n"},
-		{"multiple paths", []string{"lib/test-data/markdown", "lib/test-data/image-files"}, exitCodeOK, "lib/test-data/markdown/assets/画面.bmp\nlib/test-data/markdown/テスト.gif\nlib/test-data/image-files/blank.jpg\nlib/test-data/image-files/sample.png\nlib/test-data/image-files/画像/テスト.gif\nlib/test-data/image-files/画面.bmp\n", ""},
+		{"multiple paths", []string{"lib/test-data/markdown", "lib/test-data/image-files"}, exitCodeFoundUnreferencedImages, "lib/test-data/markdown/assets/画面.bmp\nlib/test-data/markdown/テスト.gif\nlib/test-data/image-files/blank.jpg\nlib/test-data/image-files/sample.png\nlib/test-data/image-files/画像/テスト.gif\nlib/test-data/image-files/画面.bmp\n", ""},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

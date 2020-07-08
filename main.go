@@ -13,8 +13,10 @@ import (
 // exitCode
 const (
 	exitCodeOK = iota
+	exitCodeFoundUnreferencedImages
 	exitCodeInvalidArgs
 	exitCodeInternalOperation
+	exitCodeFailedToRemoveFiles
 )
 
 const (
@@ -118,6 +120,10 @@ func run(args []string) int {
 			}
 		}
 
+		if len(delPaths) > 0 {
+			exitCode = exitCodeFoundUnreferencedImages
+		}
+
 		if !delFlag || len(delPaths) == 0 {
 			continue
 		}
@@ -138,7 +144,7 @@ func run(args []string) int {
 			e := os.Remove(delPath)
 			if e != nil {
 				fmt.Fprintf(outerr, "failed to remove file: %s\n", e)
-				exitCode = exitCodeInternalOperation
+				exitCode = exitCodeFailedToRemoveFiles
 			}
 		}
 	}
