@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT) [![CircleCI](https://circleci.com/gh/kemokemo/furit.svg?style=svg)](https://circleci.com/gh/kemokemo/furit) [![codecov](https://codecov.io/gh/kemokemo/furit/branch/master/graph/badge.svg)](https://codecov.io/gh/kemokemo/furit) [![Go Report Card](https://goreportcard.com/badge/github.com/kemokemo/furit)](https://goreportcard.com/report/github.com/kemokemo/furit)
 
-This tool finds unreferenced image assets from text files such as markdown.
+This tool finds unreferenced images from text files such as markdown.
 
 ## Install
 
@@ -36,9 +36,14 @@ Usage: furit [<option>...] <1st path> <2nd path>...
 $ furit content
 content/posts/assets/some_screen.bmp
 content/posts/assets/logo.gif
+
+$ echo $?
+1
 ```
 
-This tool looks recursively for the folder you specify, finds links to images in the text it finds, and enumerates the unlinked image files from text.
+This tool looks recursively for the folder you specify, finds links to images in the text it finds, and enumerates the unreferenced image files from text.
+
+If any unreferenced images were found, it returns `1` as an `ExitCode`. This is also true for the deletion operation described below.
 
 ```sh
 $ furit -d content
@@ -48,7 +53,7 @@ Are you sure to delete these unlinked images? [y/n]: n
 the file deletion process has been canceled by user input
 ```
 
-If you want to delete unwanted images found by the tool while reviewing them, specify only the `-d` flag.
+If you want to delete any unreferenced images found by this tool while checking them, just specify the `-d` flag.
 
 ```sh
 $ furit -d -f content
@@ -57,6 +62,8 @@ content/posts/assets/logo.gif
 ```
 
 You can also specify the `-f` flag if you want to run the process of deletion automatically without confirmation. In that case, the list of files to be deleted will still be printed.
+
+If the deletion fails, it returns an `ExitCode` other than `0` and `1`.
 
 ## Supported
 
