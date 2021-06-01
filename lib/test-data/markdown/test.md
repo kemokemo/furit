@@ -10,4 +10,4 @@
 
 ![logo](logo.jpg)
 
-![](テスト.png)
+![test](テスト.png)

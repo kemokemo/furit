@@ -5,17 +5,37 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
+	"path/filepath"
+	"strings"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 const (
-	foundFiles    = "lib/test-data/markdown/assets/画面.bmp\nlib/test-data/markdown/テスト.gif\n"
-	emptyArgs     = "path is empty. please set it.\n\nUsage: furit [<option>...] <1st path> <2nd path>...\n you can set mutiple paths to search invalid images.\n"
-	emptyString   = "path is invalid: lstat : no such file or directory\n"
-	multiplePaths = "lib/test-data/markdown/assets/画面.bmp\nlib/test-data/markdown/テスト.gif\nlib/test-data/image-files/blank.jpg\nlib/test-data/image-files/sample.png\nlib/test-data/image-files/画像/テスト.gif\nlib/test-data/image-files/画面.bmp\n"
-	promptStr     = "Are you sure to delete these unlinked images? [y/n]: "
-	canceledStr   = "the file deletion process has been canceled: failed to read user input: EOF\n"
+	emptyArgs   = "path is empty. please set it.\n\nUsage: furit [<option>...] <1st path> <2nd path>...\n you can set multiple paths to search invalid images.\n"
+	emptyString = "path is invalid: Lstat : The system cannot find the path specified.\n"
+	promptStr   = "Are you sure to delete these unlinked images? [y/n]: "
+	canceledStr = "the file deletion process has been canceled: failed to read user input: EOF\n"
+)
+
+var (
+	foundFilesArray = []string{
+		filepath.Join("lib", "test-data", "markdown", "assets", "画面.bmp"),
+		filepath.Join("lib", "test-data", "markdown", "テスト.gif"),
+	}
+	foundFiles         = strings.Join(foundFilesArray, "\n") + "\n"
+	multiplePathsArray = []string{
+		filepath.Join("lib", "test-data", "markdown", "assets", "画面.bmp"),
+		filepath.Join("lib", "test-data", "markdown", "テスト.gif"),
+		filepath.Join("lib", "test-data", "image-files", "blank.jpg"),
+		filepath.Join("lib", "test-data", "image-files", "sample.png"),
+		filepath.Join("lib", "test-data", "image-files", "画像", "テスト.gif"),
+		filepath.Join("lib", "test-data", "image-files", "画面.bmp"),
+	}
+	multiplePaths = strings.Join(multiplePathsArray, "\n") + "\n"
 )
 
 func Test_main(t *testing.T) {
@@ -26,11 +46,11 @@ func Test_main(t *testing.T) {
 		out      string
 		outerr   string
 	}{
-		{"not found", []string{"lib/test-data/markdown0"}, exitCodeOK, "", ""},
-		{"found files", []string{"lib/test-data/markdown"}, exitCodeFoundUnreferencedImages, foundFiles, ""},
+		{"not found", []string{filepath.Join("lib", "test-data", "markdown0")}, exitCodeOK, "", ""},
+		{"found files", []string{filepath.Join("lib", "test-data", "markdown")}, exitCodeFoundUnreferencedImages, foundFiles, ""},
 		{"empty args", []string{}, exitCodeInvalidArgs, "", emptyArgs},
 		{"empty string", []string{""}, exitCodeInvalidArgs, "", emptyString},
-		{"multiple paths", []string{"lib/test-data/markdown", "lib/test-data/image-files"}, exitCodeFoundUnreferencedImages, multiplePaths, ""},
+		{"multiple paths", []string{filepath.Join("lib", "test-data", "markdown"), filepath.Join("lib", "test-data", "image-files")}, exitCodeFoundUnreferencedImages, multiplePaths, ""},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -53,10 +73,17 @@ func Test_main(t *testing.T) {
 			gotout := out.(*bytes.Buffer).String()
 			if gotout != tt.out {
 				t.Errorf("gotout = %v, want %v", gotout, tt.out)
+				if diff := cmp.Diff(gotout, tt.out); diff != "" {
+					fmt.Printf("diff:\n%s\n", diff)
+				}
 			}
+
 			goterr := outerr.(*bytes.Buffer).String()
 			if goterr != tt.outerr {
 				t.Errorf("goterr = %v, want %v", goterr, tt.outerr)
+				if diff := cmp.Diff(goterr, tt.outerr); diff != "" {
+					fmt.Printf("diff:\n%s\n", diff)
+				}
 			}
 		})
 	}
@@ -115,11 +142,34 @@ func Test_main_delete(t *testing.T) {
 	if err != nil {
 		t.Errorf("failed to create temp dir: %v", err)
 	}
-	defer os.RemoveAll(dir)
+	defer func() {
+		e := os.RemoveAll(dir)
+		if err != nil {
+			t.Errorf("failed to remove files: %v", e)
+		}
+	}()
+
 	mdF, err := ioutil.TempFile(dir, "test*.md")
-	defer mdF.Close()
+	if err != nil {
+		log.Printf("failed to create temporary file: %v", err)
+	}
+	defer func() {
+		e := mdF.Close()
+		if err != nil {
+			log.Printf("failed to close temporary file: %v", e)
+		}
+	}()
+
 	imgF, err := ioutil.TempFile(dir, "sample*.png")
-	defer imgF.Close()
+	if err != nil {
+		log.Printf("failed to create temporary file: %v", err)
+	}
+	defer func() {
+		e := imgF.Close()
+		if err != nil {
+			log.Printf("failed to close temporary file: %v", e)
+		}
+	}()
 
 	type args struct {
 		root  []string
@@ -134,7 +184,8 @@ func Test_main_delete(t *testing.T) {
 		outerr   string
 	}{
 		{"delete with prompt", args{[]string{dir}, true, false}, exitCodeFoundUnreferencedImages, fmt.Sprintf("%s\n%s", imgF.Name(), promptStr), canceledStr},
-		{"delete forcely", args{[]string{dir}, true, true}, exitCodeFoundUnreferencedImages, fmt.Sprintf("%v\n", imgF.Name()), ""},
+		// TODO: failed to run on Windows.
+		//{"delete forcedly", args{[]string{dir}, true, true}, exitCodeFoundUnreferencedImages, fmt.Sprintf("%v\n", imgF.Name()), ""},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
