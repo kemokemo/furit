@@ -1,6 +1,7 @@
 package furit
 
 import (
+	"path/filepath"
 	"reflect"
 	"testing"
 )
@@ -15,12 +16,12 @@ func Test_imageFinder_Find(t *testing.T) {
 		want    []string
 		wantErr bool
 	}{
-		{name: "test-data", args: args{root: "./test-data/image-files"},
+		{name: "test-data", args: args{root: filepath.Join("test-data", "image-files")},
 			want: []string{
-				"test-data/image-files/blank.jpg",
-				"test-data/image-files/sample.png",
-				"test-data/image-files/画像/テスト.gif",
-				"test-data/image-files/画面.bmp",
+				filepath.Join("test-data", "image-files", "blank.jpg"),
+				filepath.Join("test-data", "image-files", "sample.png"),
+				filepath.Join("test-data", "image-files", "画像/テスト.gif"),
+				filepath.Join("test-data", "image-files", "画面.bmp"),
 			},
 			wantErr: false,
 		},

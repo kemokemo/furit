@@ -21,7 +21,7 @@ const (
 
 const (
 	usage = `Usage: furit [<option>...] <1st path> <2nd path>...
- you can set mutiple paths to search invalid images.`
+ you can set multiple paths to search invalid images.`
 
 	flags = `-d, -delete:
     delete unlinked image files (with confirmation)

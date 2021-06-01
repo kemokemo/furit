@@ -11,9 +11,15 @@ import (
 
 type markdown struct{}
 
-const mdImgLinkFormat = `\!\[.*\]\((.+\.(png|PNG|jpg|JPG|jpeg|JPEG|bmp|BMP|gif|GIF|tiff|TIFF))\)`
+const (
+	mdImgLinkFormat          = `\!\[.*\]\((.+\.(png|PNG|jpg|JPG|jpeg|JPEG|bmp|BMP|gif|GIF|tiff|TIFF|emf|EMF))\)`
+	mdImgLinkFormatWithQuery = `\!\[.*\]\((.+\.(png|PNG|jpg|JPG|jpeg|JPEG|bmp|BMP|gif|GIF|tiff|TIFF|emf|EMF))\?.*\)`
+)
 
-var mdLinkReg = regexp.MustCompile(mdImgLinkFormat)
+var (
+	mdLinkReg          = regexp.MustCompile(mdImgLinkFormat)
+	mdLinkRegWithQuery = regexp.MustCompile(mdImgLinkFormatWithQuery)
+)
 
 // Find converts the path of images referenced by text to paths relative to the program and returns it.
 func (m *markdown) Find(root string) ([]string, error) {
@@ -40,9 +46,16 @@ func (m *markdown) Find(root string) ([]string, error) {
 
 		s := bufio.NewScanner(f)
 		for s.Scan() {
-			group := mdLinkReg.FindSubmatch([]byte(s.Text()))
+			currentText := s.Text()
+			group := mdLinkReg.FindSubmatch([]byte(currentText))
 			if len(group) > 1 {
 				links = append(links, filepath.Join(filepath.Dir(path), string(group[1])))
+				continue
+			}
+			group = mdLinkRegWithQuery.FindSubmatch([]byte(currentText))
+			if len(group) > 1 {
+				links = append(links, filepath.Join(filepath.Dir(path), string(group[1])))
+				continue
 			}
 		}
 		return nil
