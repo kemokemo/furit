@@ -23,6 +23,7 @@ func Test_markdown_Find(t *testing.T) {
 				filepath.Join("test-data", "markdown", "assets", "サンプル.png"),
 				filepath.Join("test-data", "markdown", "logo.jpg"),
 				filepath.Join("test-data", "markdown", "テスト.png"),
+				filepath.Join("test-data", "markdown", "assets", "refereed_with_query.png"),
 			}, wantErr: false},
 	}
 	for _, tt := range tests {
