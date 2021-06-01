@@ -7,7 +7,7 @@ executors:
   go-115:
     docker:
       # Using container: https://hub.docker.com/r/circleci/golang
-      - image: circleci/golang:1.15-node
+      - image: circleci/golang:1.15.12-node
     working_directory: /go/src/github.com/kemokemo/furit
 
 jobs:
