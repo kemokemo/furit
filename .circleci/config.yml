@@ -4,15 +4,15 @@ orbs:
   codecov: codecov/codecov@1.0.5
 
 executors:
-  go-160:
+  go-115:
     docker:
-      # https://hub.docker.com/layers/circleci/golang/1.14-node/images/sha256-2190fa9a5f81e3cb4397147d11aeaa88c22e6e35d401eead90195925230e071d?context=explore
-      - image: circleci/go@1.6.0
+      # Using container: https://hub.docker.com/r/circleci/golang
+      - image: circleci/golang:1.15-node
     working_directory: /go/src/github.com/kemokemo/furit
 
 jobs:
   test:
-    executor: go-160
+    executor: go-115
     steps:
       - checkout
       - run: go version
@@ -21,7 +21,7 @@ jobs:
       - codecov/upload:
           file: ./coverage.out
   lint:
-    executor: go-160
+    executor: go-115
     steps:
       - checkout
       - run: go get -v -t -d ./...
@@ -30,13 +30,13 @@ jobs:
       - run: golint ./...
       - run: go vet ./...
   build:
-    executor: go-160
+    executor: go-115
     steps:
       - checkout
       - run: go get -v -t -d ./...
       - run: go build
   deploy:
-    executor: go-160
+    executor: go-115
     steps:
       - run: echo 'export PATH=${GOPATH}/bin/:${PATH}' >> $BASH_ENV
       - checkout
