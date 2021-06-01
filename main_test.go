@@ -16,7 +16,6 @@ import (
 
 const (
 	emptyArgs   = "path is empty. please set it.\n\nUsage: furit [<option>...] <1st path> <2nd path>...\n you can set multiple paths to search invalid images.\n"
-	emptyString = "path is invalid: Lstat : The system cannot find the path specified.\n"
 	promptStr   = "Are you sure to delete these unlinked images? [y/n]: "
 	canceledStr = "the file deletion process has been canceled: failed to read user input: EOF\n"
 )
@@ -49,7 +48,6 @@ func Test_main(t *testing.T) {
 		{"not found", []string{filepath.Join("lib", "test-data", "markdown0")}, exitCodeOK, "", ""},
 		{"found files", []string{filepath.Join("lib", "test-data", "markdown")}, exitCodeFoundUnreferencedImages, foundFiles, ""},
 		{"empty args", []string{}, exitCodeInvalidArgs, "", emptyArgs},
-		{"empty string", []string{""}, exitCodeInvalidArgs, "", emptyString},
 		{"multiple paths", []string{filepath.Join("lib", "test-data", "markdown"), filepath.Join("lib", "test-data", "image-files")}, exitCodeFoundUnreferencedImages, multiplePaths, ""},
 	}
 	for _, tt := range tests {
