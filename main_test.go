@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -53,7 +52,10 @@ func Test_main(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			flagSet := flag.NewFlagSet("testing main", flag.ContinueOnError)
-			flagSet.Parse(tt.args)
+			err := flagSet.Parse(tt.args)
+			if err != nil {
+				t.Errorf("failed to flagSet.Parse, %v", err)
+			}
 			cmdArgs = flagSet.Args()
 
 			var exitCodeTest int
@@ -136,7 +138,7 @@ func Test_main_delete(t *testing.T) {
 	help = false
 	ver = false
 
-	dir, err := ioutil.TempDir("test-data", "furit-test")
+	dir, err := os.MkdirTemp("test-data", "furit-test")
 	if err != nil {
 		t.Errorf("failed to create temp dir: %v", err)
 	}
@@ -147,7 +149,7 @@ func Test_main_delete(t *testing.T) {
 		}
 	}()
 
-	mdF, err := ioutil.TempFile(dir, "test*.md")
+	mdF, err := os.CreateTemp(dir, "test*.md")
 	if err != nil {
 		log.Printf("failed to create temporary file: %v", err)
 	}
@@ -158,7 +160,7 @@ func Test_main_delete(t *testing.T) {
 		}
 	}()
 
-	imgF, err := ioutil.TempFile(dir, "sample*.png")
+	imgF, err := os.CreateTemp(dir, "sample*.png")
 	if err != nil {
 		log.Printf("failed to create temporary file: %v", err)
 	}
@@ -188,7 +190,10 @@ func Test_main_delete(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			flagSet := flag.NewFlagSet("testing main", flag.ContinueOnError)
-			flagSet.Parse(tt.args.root)
+			err := flagSet.Parse(tt.args.root)
+			if err != nil {
+				t.Errorf("failed to flagSet.Parse, %v", err)
+			}
 			cmdArgs = flagSet.Args()
 
 			var exitCodeTest int
