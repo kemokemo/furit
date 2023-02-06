@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 	"testing"
 
 	furit "github.com/kemokemo/furit/lib"
@@ -49,6 +50,7 @@ var (
 	ver       bool
 	delFlag   bool
 	forceFlag bool
+	typeFlag  string
 )
 
 func init() {
@@ -61,6 +63,8 @@ func init() {
 	flag.BoolVar(&delFlag, "d", false, "delete unlinked image files")
 	flag.BoolVar(&forceFlag, "force", false, "delete unlinked image files without prompting for confirmation")
 	flag.BoolVar(&forceFlag, "f", false, "delete unlinked image files without prompting for confirmation")
+	flag.StringVar(&typeFlag, "type", "markdown", "file type to check links")
+	flag.StringVar(&typeFlag, "t", "markdown", "file type to check links")
 	flag.Parse()
 	cmdArgs = flag.Args()
 }
@@ -82,6 +86,11 @@ func run(args []string) int {
 		fmt.Fprintf(outerr, "path is empty. please set it.\n\n%v\n", usage)
 		return exitCodeInvalidArgs
 	}
+	linkFinder, err := getFinderByTypeFlag(typeFlag)
+	if err != nil {
+		fmt.Fprintf(outerr, "type error, %v\n", err)
+		return exitCodeInvalidArgs
+	}
 
 	exitCode := exitCodeOK
 	for _, root := range args {
@@ -92,7 +101,7 @@ func run(args []string) int {
 			continue
 		}
 
-		links, err := furit.Markdown.Find(root)
+		links, err := linkFinder.Find(root)
 		if err != nil {
 			fmt.Fprintf(outerr, "failed to find links: %v\n", err)
 			exitCode = exitCodeInternalOperation
@@ -150,4 +159,15 @@ func run(args []string) int {
 	}
 
 	return exitCode
+}
+
+func getFinderByTypeFlag(tf string) (furit.ImageLinkFinder, error) {
+	tf = strings.ToLower(tf)
+	if tf == "markdown" {
+		return furit.Markdown, nil
+	} else if tf == "html" {
+		return furit.HTML, nil
+	} else {
+		return nil, fmt.Errorf("unknown type flag: %v", tf)
+	}
 }

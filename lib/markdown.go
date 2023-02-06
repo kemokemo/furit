@@ -33,7 +33,7 @@ func (m *markdown) Find(root string) ([]string, error) {
 			return filepath.SkipDir
 		}
 
-		ext := filepath.Ext(info.Name())
+		ext := strings.ToLower(filepath.Ext(info.Name()))
 		if info.IsDir() || (ext != ".md" && ext != ".markdown") {
 			return nil
 		}
