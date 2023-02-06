@@ -69,7 +69,10 @@ If the deletion fails, it returns an `ExitCode` other than `0` and `1`.
 
 ### Text format
 
-Currently, only `Markdown` format is supported as text to find links to images.
+The following text are supported.
+
+- Markdown
+- HTML
 
 ### Image format
 

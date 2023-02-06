@@ -30,6 +30,9 @@ const (
 -f, -force:
     delete unlinked image files without prompting for confirmation
 
+-t, -type:
+    specify the target text format (markdown, html are available)
+
 -h, -help:
     display help
 
