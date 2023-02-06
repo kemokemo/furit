@@ -1,6 +1,6 @@
 # furit ( <u>F</u>ind <u>U</u>n<u>r</u>eferenced <u>I</u>mages in <u>T</u>ext files )
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT) [![CircleCI](https://circleci.com/gh/kemokemo/furit.svg?style=svg)](https://circleci.com/gh/kemokemo/furit) [![codecov](https://codecov.io/gh/kemokemo/furit/branch/master/graph/badge.svg)](https://codecov.io/gh/kemokemo/furit) [![Go Report Card](https://goreportcard.com/badge/github.com/kemokemo/furit)](https://goreportcard.com/report/github.com/kemokemo/furit)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT) [![Go Report Card](https://goreportcard.com/badge/github.com/kemokemo/furit)](https://goreportcard.com/report/github.com/kemokemo/furit) [![Go Version](https://img.shields.io/github/go-mod/go-version/kemokemo/furit)](https://github.com/kemokemo/furit/blob/master/go.mod)
 
 This tool finds unreferenced images from text files such as markdown.
 
