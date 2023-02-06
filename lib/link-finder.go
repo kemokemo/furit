@@ -6,5 +6,8 @@ type ImageLinkFinder interface {
 	Find(root string) ([]string, error)
 }
 
-// Markdown is the finder of image link from markdown file.
+// Markdown is the finder of image link from markdown files.
 var Markdown ImageLinkFinder = (*markdown)(nil)
+
+// HTML is the finder of image link from html files.
+var HTML ImageLinkFinder = (*html)(nil)
