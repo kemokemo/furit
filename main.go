@@ -4,11 +4,14 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
 	furit "github.com/kemokemo/furit/lib"
+	"gopkg.in/yaml.v3"
 )
 
 // exitCode
@@ -30,6 +33,9 @@ const (
 -f, -force:
     delete unlinked image files without prompting for confirmation
 
+-s, -settings:
+    specify the settings file path to exclude files etc..
+
 -t, -type:
     specify the target text format (markdown, html are available)
 
@@ -49,11 +55,12 @@ var (
 
 // flags
 var (
-	help      bool
-	ver       bool
-	delFlag   bool
-	forceFlag bool
-	typeFlag  string
+	help         bool
+	ver          bool
+	delFlag      bool
+	forceFlag    bool
+	typeFlag     string
+	settingsPath string
 )
 
 func init() {
@@ -68,6 +75,8 @@ func init() {
 	flag.BoolVar(&forceFlag, "f", false, "delete unlinked image files without prompting for confirmation")
 	flag.StringVar(&typeFlag, "type", "markdown", "file type to check links")
 	flag.StringVar(&typeFlag, "t", "markdown", "file type to check links")
+	flag.StringVar(&settingsPath, "settings", "", "settings file path")
+	flag.StringVar(&settingsPath, "s", "", "settings file path")
 	flag.Parse()
 	cmdArgs = flag.Args()
 }
@@ -93,6 +102,19 @@ func run(args []string) int {
 	if err != nil {
 		fmt.Fprintf(outerr, "type error, %v\n", err)
 		return exitCodeInvalidArgs
+	}
+	var settings settings
+	if settingsPath != "" {
+		b, err := ioutil.ReadFile(settingsPath)
+		if err != nil {
+			fmt.Fprintf(outerr, "failed to read settings error, %v\n", err)
+			return exitCodeInvalidArgs
+		}
+		err = yaml.Unmarshal(b, &settings)
+		if err != nil {
+			fmt.Fprintf(outerr, "failed to unmarshal settings error, %v\n", err)
+			return exitCodeInvalidArgs
+		}
 	}
 
 	exitCode := exitCodeOK
@@ -126,10 +148,14 @@ func run(args []string) int {
 		var delPaths []string
 		for _, imPath := range imgPaths {
 			_, ok := imgMap[imPath]
-			if !ok {
-				delPaths = append(delPaths, imPath)
-				fmt.Fprintln(out, imPath)
+			if ok {
+				continue
 			}
+			if isExcludePath(imPath, root, settings.Excludes) {
+				continue
+			}
+			delPaths = append(delPaths, imPath)
+			fmt.Fprintln(out, imPath)
 		}
 
 		if len(delPaths) > 0 {
@@ -173,4 +199,14 @@ func getFinderByTypeFlag(tf string) (furit.ImageLinkFinder, error) {
 	} else {
 		return nil, fmt.Errorf("unknown type flag: %v", tf)
 	}
+}
+
+func isExcludePath(path string, root string, excludes []string) bool {
+	for _, ex := range excludes {
+		exPath := filepath.Join(root, ex)
+		if exPath == path {
+			return true
+		}
+	}
+	return false
 }
