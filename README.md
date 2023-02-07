@@ -23,6 +23,9 @@ Usage: furit [<option>...] <1st path> <2nd path>...
 -f, -force:
     delete unlinked image files without prompting for confirmation
 
+-s, -settings:
+    specify the settings file path to exclude files etc..
+
 -t, -type:
     specify the target text format (markdown, html are available)
 
