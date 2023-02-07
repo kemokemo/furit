@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -105,7 +104,7 @@ func run(args []string) int {
 	}
 	var settings settings
 	if settingsPath != "" {
-		b, err := ioutil.ReadFile(settingsPath)
+		b, err := os.ReadFile(settingsPath)
 		if err != nil {
 			fmt.Fprintf(outerr, "failed to read settings error, %v\n", err)
 			return exitCodeInvalidArgs
