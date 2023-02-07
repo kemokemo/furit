@@ -1,0 +1,4 @@
+excludes:
+  - "assets/hoge.png"
+  - "assets/test.png"
+
