@@ -90,7 +90,7 @@ func run(args []string) int {
 		return exitCodeOK
 	}
 	if ver {
-		fmt.Fprintf(out, "%s version %s.%s\n", Name, Version, revision)
+		fmt.Fprintf(out, "%s version %s.%s\n", Name, Version, Revision)
 		return exitCodeOK
 	}
 	if len(args) == 0 {

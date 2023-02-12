@@ -102,7 +102,7 @@ func Test_main_help_ver(t *testing.T) {
 		outerr   string
 	}{
 		{"help", args{true, false}, exitCodeOK, fmt.Sprintf("%s\n\n%s\n", usage, flags), ""},
-		{"version", args{false, true}, exitCodeOK, fmt.Sprintf("%s version %s.%s\n", Name, Version, revision), ""},
+		{"version", args{false, true}, exitCodeOK, fmt.Sprintf("%s version %s.%s\n", Name, Version, Revision), ""},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
