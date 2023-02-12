@@ -1,6 +1,6 @@
 # furit ( <u>F</u>ind <u>U</u>n<u>r</u>eferenced <u>I</u>mages in <u>T</u>ext files )
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT) [![Go Report Card](https://goreportcard.com/badge/github.com/kemokemo/furit)](https://goreportcard.com/report/github.com/kemokemo/furit) [![Go Version](https://img.shields.io/github/go-mod/go-version/kemokemo/furit)](https://github.com/kemokemo/furit/blob/master/go.mod)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT) [![test-and-build](https://github.com/kemokemo/furit/actions/workflows/test-and-build.yml/badge.svg)](https://github.com/kemokemo/furit/actions/workflows/test-and-build.yml)
 
 This tool finds unreferenced images from text files such as markdown.
 
@@ -113,7 +113,7 @@ The following image extensions are supported. They are not case insensitive.
 
 ## License
 
-[MIT](https://github.com/kemokemo/furit/blob/master/LICENSE)
+[MIT](https://github.com/kemokemo/furit/blob/main/LICENSE)
 
 ## Author
 
