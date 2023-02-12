@@ -6,6 +6,26 @@ This tool finds unreferenced images from text files such as markdown.
 
 ## Install
 
+### Homebrew
+
+```sh
+brew install kemokemo/tap/furit
+```
+
+### Scoop
+
+First, add my scoop-bucket.
+
+```sh
+scoop bucket add kemokemo-bucket https://github.com/kemokemo/scoop-bucket.git
+```
+
+Next, install this app by running the following.
+
+```sh
+scoop install furit
+```
+
 ### Binary
 
 Get the latest version from [the release page](https://github.com/kemokemo/furit/releases/latest), and download the archive file for your operating system/architecture. Unpack the archive, and put the binary somewhere in your `$PATH`.
