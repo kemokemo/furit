@@ -4,7 +4,7 @@ builds:
     binary: furit
     # refer to the https://pkg.go.dev/cmd/link
     ldflags:
-      - -s -w github.com/kemokemo/furit/main.Revision={{.ShortCommit}}
+      - -s -w -X github.com/kemokemo/furit/main.Revision={{.ShortCommit}}
     goos:
       - darwin
       - linux
