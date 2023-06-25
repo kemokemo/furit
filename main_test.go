@@ -36,7 +36,7 @@ var (
 	multiplePaths = strings.Join(multiplePathsArray, "\n") + "\n"
 )
 
-func Test_main(t *testing.T) {
+func Test_main_markdown(t *testing.T) {
 	tests := []struct {
 		name     string
 		args     []string
@@ -51,7 +51,59 @@ func Test_main(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			flagSet := flag.NewFlagSet("testing main", flag.ContinueOnError)
+			flagSet := flag.NewFlagSet("testing main markdown", flag.ContinueOnError)
+			err := flagSet.Parse(tt.args)
+			if err != nil {
+				t.Errorf("failed to flagSet.Parse, %v", err)
+			}
+			cmdArgs = flagSet.Args()
+
+			var exitCodeTest int
+			exit = func(n int) {
+				exitCodeTest = n
+			}
+			out = new(bytes.Buffer)
+			outerr = new(bytes.Buffer)
+
+			main()
+
+			if exitCodeTest != tt.exitCode {
+				t.Errorf("exit code = %v, want %v", exitCodeTest, tt.exitCode)
+			}
+			gotout := out.(*bytes.Buffer).String()
+			if gotout != tt.out {
+				t.Errorf("gotout = %v, want %v", gotout, tt.out)
+				if diff := cmp.Diff(gotout, tt.out); diff != "" {
+					fmt.Printf("diff:\n%s\n", diff)
+				}
+			}
+
+			goterr := outerr.(*bytes.Buffer).String()
+			if goterr != tt.outerr {
+				t.Errorf("goterr = %v, want %v", goterr, tt.outerr)
+				if diff := cmp.Diff(goterr, tt.outerr); diff != "" {
+					fmt.Printf("diff:\n%s\n", diff)
+				}
+			}
+		})
+	}
+}
+
+func Test_main_html(t *testing.T) {
+	typeFlag = "html"
+
+	tests := []struct {
+		name     string
+		args     []string
+		exitCode int
+		out      string
+		outerr   string
+	}{
+		{"found", []string{filepath.Join("lib", "test-data", "html")}, exitCodeFoundUnreferencedImages, filepath.Join("lib", "test-data", "html", "assets", "hoge.png") + "\n", ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			flagSet := flag.NewFlagSet("testing main html", flag.ContinueOnError)
 			err := flagSet.Parse(tt.args)
 			if err != nil {
 				t.Errorf("failed to flagSet.Parse, %v", err)
