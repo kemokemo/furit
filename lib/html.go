@@ -2,6 +2,7 @@ package furit
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -38,14 +39,21 @@ func (m *html) Find(root string) ([]string, error) {
 		if err != nil {
 			return fmt.Errorf("failed to read html file, %v", err)
 		}
+
+		var err2 error
 		doc.Find("img").Each(func(i int, s *goquery.Selection) {
 			srcLink, exists := s.Attr("src")
 			if !exists {
 				return
 			}
+			srcLink, e := url.PathUnescape(srcLink)
+			if e != nil {
+				err2 = fmt.Errorf("%v, failed to unescape the image url: %v", err2, e)
+				return
+			}
 			links = append(links, filepath.Join(filepath.Dir(path), srcLink))
 		})
-		return nil
+		return err2
 	})
 
 	return links, err
