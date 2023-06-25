@@ -111,6 +111,10 @@ The following image extensions are supported. They are not case insensitive.
 - tif, tiff
 - emf
 
+## Notes
+
+If you use `img` tag in markdown files to specify the image size, please convert to the html files and use `html` type option.
+
 ## License
 
 [MIT](https://github.com/kemokemo/furit/blob/main/LICENSE)
