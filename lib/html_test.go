@@ -20,6 +20,7 @@ func Test_html_Find(t *testing.T) {
 			want: []string{
 				filepath.Join("test-data", "html", "assets", "sample.png"),
 				filepath.Join("test-data", "html", "assets", "test.jpg"),
+				filepath.Join("test-data", "html", "assets", "真夏の秋葉原.png"),
 			}, wantErr: false},
 	}
 	for _, tt := range tests {
@@ -28,7 +29,6 @@ func Test_html_Find(t *testing.T) {
 			got, err := m.Find(tt.args.root)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("html.Find() error = %v, wantErr %v", err, tt.wantErr)
-				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("html.Find() = %v, want %v", got, tt.want)
