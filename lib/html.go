@@ -33,7 +33,7 @@ func (m *html) Find(root string) ([]string, error) {
 		if err != nil {
 			return err
 		}
-		defer f.Close()
+		defer shortClose(f)
 
 		doc, err := goquery.NewDocumentFromReader(f)
 		if err != nil {

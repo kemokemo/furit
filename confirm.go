@@ -13,7 +13,10 @@ func askForConfirmation(s string, in io.Reader, out io.Writer, retry int) (bool,
 	reader := bufio.NewReader(in)
 
 	for ; retry > 0; retry-- {
-		fmt.Fprintf(out, "%s [y/n]: ", s)
+		_, err := fmt.Fprintf(out, "%s [y/n]: ", s)
+		if err != nil {
+			return false, fmt.Errorf("failed to write content to the output: %s", err)
+		}
 
 		res, err := reader.ReadString('\n')
 		if err != nil {
@@ -21,9 +24,12 @@ func askForConfirmation(s string, in io.Reader, out io.Writer, retry int) (bool,
 		}
 
 		res = strings.ToLower(strings.TrimSpace(res))
-		if res == "y" || res == "yes" {
+		switch res {
+		case "y", "yes":
 			return true, nil
-		} else if res == "n" || res == "no" {
+		case "n", "no":
+			return false, nil
+		default:
 			return false, nil
 		}
 	}
