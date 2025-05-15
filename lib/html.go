@@ -33,7 +33,7 @@ func (m *html) Find(root string) ([]string, error) {
 		if err != nil {
 			return err
 		}
-		defer f.Close()
+		defer shortClose(f)
 
 		doc, err := goquery.NewDocumentFromReader(f)
 		if err != nil {
@@ -51,7 +51,8 @@ func (m *html) Find(root string) ([]string, error) {
 				err2 = fmt.Errorf("%v, failed to unescape the image url: %v", err2, e)
 				return
 			}
-			links = append(links, filepath.Join(filepath.Dir(path), srcLink))
+			srcFilePath := filepath.Clean(filepath.Join(filepath.Dir(path), strings.ReplaceAll(srcLink, "\\", "/")))
+			links = append(links, srcFilePath)
 		})
 		return err2
 	})

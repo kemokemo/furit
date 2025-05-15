@@ -42,7 +42,7 @@ func (m *markdown) Find(root string) ([]string, error) {
 		if err != nil {
 			return err
 		}
-		defer f.Close()
+		defer shortClose(f)
 
 		s := bufio.NewScanner(f)
 		for s.Scan() {

@@ -86,32 +86,50 @@ func main() {
 
 func run(args []string) int {
 	if help {
-		fmt.Fprintf(out, "%s\n\n%s\n", usage, flags)
+		_, err := fmt.Fprintf(out, "%s\n\n%s\n", usage, flags)
+		if err != nil {
+			fmt.Println("failed to output usage, ", err)
+		}
 		return exitCodeOK
 	}
 	if ver {
-		fmt.Fprintf(out, "%s version %s.%s\n", Name, Version, Revision)
+		_, err := fmt.Fprintf(out, "%s version %s.%s\n", Name, Version, Revision)
+		if err != nil {
+			fmt.Println("failed to output version, ", err)
+		}
 		return exitCodeOK
 	}
 	if len(args) == 0 {
-		fmt.Fprintf(outerr, "path is empty. please set it.\n\n%v\n", usage)
+		_, err := fmt.Fprintf(outerr, "path is empty. please set it.\n\n%v\n", usage)
+		if err != nil {
+			fmt.Println("failed to output warning, ", err)
+		}
 		return exitCodeInvalidArgs
 	}
 	linkFinder, err := getFinderByTypeFlag(typeFlag)
 	if err != nil {
-		fmt.Fprintf(outerr, "type error, %v\n", err)
+		_, err := fmt.Fprintf(outerr, "type error, %v\n", err)
+		if err != nil {
+			fmt.Println("failed to output type error, ", err)
+		}
 		return exitCodeInvalidArgs
 	}
 	var settings settings
 	if settingsPath != "" {
 		b, err := os.ReadFile(settingsPath)
 		if err != nil {
-			fmt.Fprintf(outerr, "failed to read settings error, %v\n", err)
+			_, err := fmt.Fprintf(outerr, "failed to read settings error, %v\n", err)
+			if err != nil {
+				fmt.Println("failed to output reading settings error, ", err)
+			}
 			return exitCodeInvalidArgs
 		}
 		err = yaml.Unmarshal(b, &settings)
 		if err != nil {
-			fmt.Fprintf(outerr, "failed to unmarshal settings error, %v\n", err)
+			_, err := fmt.Fprintf(outerr, "failed to unmarshal settings error, %v\n", err)
+			if err != nil {
+				fmt.Println("failed to output unmarshal settings error, ", err)
+			}
 			return exitCodeInvalidArgs
 		}
 	}
@@ -120,21 +138,30 @@ func run(args []string) int {
 	for _, root := range args {
 		_, err := os.Lstat(root)
 		if err != nil {
-			fmt.Fprintf(outerr, "path is invalid: %v\n", err)
+			_, err := fmt.Fprintf(outerr, "path is invalid: %v\n", err)
+			if err != nil {
+				fmt.Println("failed to output path invalid error, ", err)
+			}
 			exitCode = exitCodeInvalidArgs
 			continue
 		}
 
 		links, err := linkFinder.Find(root)
 		if err != nil {
-			fmt.Fprintf(outerr, "failed to find links: %v\n", err)
+			_, err := fmt.Fprintf(outerr, "failed to find links: %v\n", err)
+			if err != nil {
+				fmt.Println("failed to output finding links error, ", err)
+			}
 			exitCode = exitCodeInternalOperation
 			continue
 		}
 
 		imgPaths, err := furit.Image.Find(root)
 		if err != nil {
-			fmt.Fprintf(outerr, "failed to find image paths: %v\n", err)
+			_, err := fmt.Fprintf(outerr, "failed to find image paths: %v\n", err)
+			if err != nil {
+				fmt.Println("failed to output finding image paths error, ", err)
+			}
 			exitCode = exitCodeInternalOperation
 			continue
 		}
@@ -154,7 +181,10 @@ func run(args []string) int {
 				continue
 			}
 			delPaths = append(delPaths, imPath)
-			fmt.Fprintln(out, imPath)
+			_, err := fmt.Fprintln(out, imPath)
+			if err != nil {
+				fmt.Println("failed to output image paths, ", err)
+			}
 		}
 
 		if len(delPaths) > 0 {
@@ -169,10 +199,16 @@ func run(args []string) int {
 			res, err := askForConfirmation("Are you sure to delete these unlinked images?", os.Stdin, out, 3)
 			if !res {
 				if err != nil {
-					fmt.Fprintf(outerr, "the file deletion process has been canceled: %s\n", err)
+					_, err := fmt.Fprintf(outerr, "the file deletion process has been canceled: %s\n", err)
+					if err != nil {
+						fmt.Println("failed to output deletion cancel, ", err)
+					}
 					continue
 				} else {
-					fmt.Fprintln(outerr, "the file deletion process has been canceled by user input")
+					_, err := fmt.Fprintln(outerr, "the file deletion process has been canceled by user input")
+					if err != nil {
+						fmt.Println("failed to output deletion cancel by user, ", err)
+					}
 					continue
 				}
 			}
@@ -180,7 +216,10 @@ func run(args []string) int {
 		for _, delPath := range delPaths {
 			e := os.Remove(delPath)
 			if e != nil {
-				fmt.Fprintf(outerr, "failed to remove file: %s\n", e)
+				_, err := fmt.Fprintf(outerr, "failed to remove file: %s\n", e)
+				if err != nil {
+					fmt.Println("failed to output removing file error, ", err)
+				}
 				exitCode = exitCodeFailedToRemoveFiles
 			}
 		}
@@ -191,11 +230,12 @@ func run(args []string) int {
 
 func getFinderByTypeFlag(tf string) (furit.ImageLinkFinder, error) {
 	tf = strings.ToLower(tf)
-	if tf == "markdown" {
+	switch tf {
+	case "markdown":
 		return furit.Markdown, nil
-	} else if tf == "html" {
+	case "html":
 		return furit.HTML, nil
-	} else {
+	default:
 		return nil, fmt.Errorf("unknown type flag: %v", tf)
 	}
 }
