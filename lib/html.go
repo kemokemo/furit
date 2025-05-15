@@ -51,7 +51,8 @@ func (m *html) Find(root string) ([]string, error) {
 				err2 = fmt.Errorf("%v, failed to unescape the image url: %v", err2, e)
 				return
 			}
-			links = append(links, filepath.Join(filepath.Dir(path), srcLink))
+			srcFilePath := strings.ReplaceAll(filepath.Join(filepath.Dir(path), srcLink), "\\", "/")
+			links = append(links, srcFilePath)
 		})
 		return err2
 	})
