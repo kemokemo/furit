@@ -30,7 +30,7 @@ func askForConfirmation(s string, in io.Reader, out io.Writer, retry int) (bool,
 		case "n", "no":
 			return false, nil
 		default:
-			return false, nil
+			continue
 		}
 	}
 
