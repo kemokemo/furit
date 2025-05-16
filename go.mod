@@ -1,6 +1,6 @@
 module github.com/kemokemo/furit
 
-go 1.19
+go 1.23.0
 
 require (
 	github.com/PuerkitoBio/goquery v1.8.0
@@ -10,5 +10,5 @@ require (
 
 require (
 	github.com/andybalholm/cascadia v1.3.1 // indirect
-	golang.org/x/net v0.17.0 // indirect
+	golang.org/x/net v0.38.0 // indirect
 )
