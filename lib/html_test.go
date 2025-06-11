@@ -22,6 +22,7 @@ func Test_html_Find(t *testing.T) {
 				filepath.Join("test-data", "html", "assets", "test.jpg"),
 				filepath.Join("test-data", "html", "assets", "真夏の秋葉原.png"),
 				filepath.Join("test-data", "html", "assets", "test2.jpg"),
+				filepath.Join("test-data", "html", "assets", "test3.jpg"),
 			}, wantErr: false},
 	}
 	for _, tt := range tests {

@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
@@ -42,17 +43,20 @@ func (m *html) Find(root string) ([]string, error) {
 
 		var err2 error
 		doc.Find("img").Each(func(i int, s *goquery.Selection) {
-			srcLink, exists := s.Attr("src")
+			srcValue, exists := s.Attr("src")
 			if !exists {
 				return
 			}
-			srcLink, e := url.PathUnescape(srcLink)
+			srcLink, e := url.PathUnescape(srcValue)
 			if e != nil {
-				err2 = fmt.Errorf("%v, failed to unescape the image url: %v", err2, e)
-				return
+				srcLink = srcValue
 			}
-			srcFilePath := filepath.Clean(filepath.Join(filepath.Dir(path), strings.ReplaceAll(srcLink, "\\", "/")))
-			links = append(links, srcFilePath)
+			srcLink = strings.ReplaceAll(srcLink, "\\", "/")
+			srcLink = strings.Split(srcLink, "?")[0]
+			srcFilePath := filepath.Clean(filepath.Join(filepath.Dir(path), srcLink))
+			if !slices.Contains(links, srcFilePath) {
+				links = append(links, srcFilePath)
+			}
 		})
 		return err2
 	})
